@@ -11,13 +11,7 @@ import {
   useReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react'
-import type {
-  Connection,
-  Node,
-  Edge,
-  NodeChange,
-  EdgeChange,
-} from '@xyflow/react'
+import type { Connection, Node, Edge, NodeChange, EdgeChange } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useStore } from '../store/useStore'
 import { Plus, Maximize2, Trash2 } from 'lucide-react'
@@ -25,16 +19,16 @@ import { Plus, Maximize2, Trash2 } from 'lucide-react'
 const generateId = () => Math.random().toString(36).substr(2, 9)
 
 const nodeColors: Record<string, string> = {
-  english: '#58a6ff',
-  grammar: '#bc8cff',
-  vocabulary: '#d29922',
-  speaking: '#3fb950',
-  writing: '#3fb950',
-  reading: '#58a6ff',
+  english:    '#a78bfa',
+  grammar:    '#a78bfa',
+  vocabulary: '#fbbf24',
+  speaking:   '#34d399',
+  writing:    '#60a5fa',
+  reading:    '#60a5fa',
 }
 
 function getNodeColor(id: string, data: { color?: string }): string {
-  return data.color || nodeColors[id] || '#8b949e'
+  return data.color || nodeColors[id] || '#8b7fb5'
 }
 
 interface CustomNodeData {
@@ -53,46 +47,40 @@ function CustomNode({ id, data, selected }: { id: string; data: CustomNodeData; 
 
   const handleBlur = () => {
     setEditing(false)
-    setNodes((nodes) =>
-      nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, label } } : n))
-    )
+    setNodes(nodes => nodes.map(n => n.id === id ? { ...n, data: { ...n.data, label } } : n))
   }
 
   return (
     <div
       onDoubleClick={handleDoubleClick}
       style={{
-        background: `${color}18`,
-        border: `1.5px solid ${selected ? color : color + '60'}`,
+        background: `${color}12`,
+        border: `1.5px solid ${selected ? color : color + '50'}`,
         borderRadius: 10,
-        padding: '10px 16px',
+        padding: '10px 18px',
         minWidth: 100,
         textAlign: 'center',
         cursor: 'pointer',
         transition: 'all 0.15s',
-        boxShadow: selected ? `0 0 12px ${color}40` : 'none',
+        boxShadow: selected ? `0 0 16px ${color}35, 0 0 0 3px ${color}15` : 'none',
+        backdropFilter: 'blur(8px)',
       }}
     >
       {editing ? (
         <input
           value={label}
-          onChange={(e) => setLabel(e.target.value)}
+          onChange={e => setLabel(e.target.value)}
           onBlur={handleBlur}
-          onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
+          onKeyDown={e => e.key === 'Enter' && handleBlur()}
           autoFocus
           style={{
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            color: '#e6edf3',
-            fontSize: 13,
-            fontWeight: 600,
-            textAlign: 'center',
-            width: '100%',
+            background: 'transparent', border: 'none', outline: 'none',
+            color: '#ede8ff', fontSize: 13, fontWeight: 600,
+            textAlign: 'center', width: '100%', fontFamily: 'inherit',
           }}
         />
       ) : (
-        <span style={{ fontSize: 13, fontWeight: 600, color: color, whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color, whiteSpace: 'nowrap' }}>
           {data.label}
         </span>
       )}
@@ -106,26 +94,22 @@ function MindMapInner() {
   const { mindMapNodes, mindMapEdges, setMindMapNodes, setMindMapEdges } = useStore()
   const { fitView } = useReactFlow()
 
-  const nodes: Node[] = mindMapNodes.map((n) => ({
-    ...n,
-    type: 'custom',
-    data: n.data,
+  const nodes: Node[] = mindMapNodes.map(n => ({
+    ...n, type: 'custom', data: n.data,
   }))
 
-  const edges: Edge[] = mindMapEdges.map((e) => ({
+  const edges: Edge[] = mindMapEdges.map(e => ({
     ...e,
     type: 'smoothstep',
-    style: { stroke: '#30363d', strokeWidth: 2 },
+    style: { stroke: '#3a3358', strokeWidth: 1.5 },
     animated: false,
   }))
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const updated = applyNodeChanges(changes, nodes)
-      setMindMapNodes(updated.map((n) => ({
-        id: n.id,
-        type: n.type,
-        position: n.position,
+      setMindMapNodes(updated.map(n => ({
+        id: n.id, type: n.type, position: n.position,
         data: n.data as { label: string; color?: string },
       })))
     },
@@ -135,7 +119,7 @@ function MindMapInner() {
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
       const updated = applyEdgeChanges(changes, edges)
-      setMindMapEdges(updated.map((e) => ({ id: e.id, source: e.source, target: e.target })))
+      setMindMapEdges(updated.map(e => ({ id: e.id, source: e.source, target: e.target })))
     },
     [edges, setMindMapEdges]
   )
@@ -143,23 +127,21 @@ function MindMapInner() {
   const onConnect = useCallback(
     (connection: Connection) => {
       const newEdges = addEdge(connection, edges)
-      setMindMapEdges(newEdges.map((e) => ({ id: e.id, source: e.source, target: e.target })))
+      setMindMapEdges(newEdges.map(e => ({ id: e.id, source: e.source, target: e.target })))
     },
     [edges, setMindMapEdges]
   )
 
   const addNode = () => {
     const id = generateId()
+    const colors = ['#a78bfa', '#fbbf24', '#60a5fa', '#34d399']
+    const color = colors[Math.floor(Math.random() * colors.length)]
     const newNode = {
       id,
-      type: 'custom',
       position: { x: 300 + Math.random() * 200, y: 200 + Math.random() * 200 },
-      data: { label: 'new concept', color: '#8b949e' },
+      data: { label: 'new concept', color },
     }
-    setMindMapNodes([
-      ...mindMapNodes,
-      { id, position: newNode.position, data: newNode.data },
-    ])
+    setMindMapNodes([...mindMapNodes, newNode])
   }
 
   const clearAll = () => {
@@ -172,54 +154,54 @@ function MindMapInner() {
   return (
     <div style={{ height: '100%', position: 'relative' }}>
       {/* Toolbar */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          zIndex: 10,
-          display: 'flex',
-          gap: 8,
-          background: '#1c2333',
-          border: '1px solid #30363d',
-          borderRadius: 12,
-          padding: '8px 12px',
-        }}
-      >
+      <div style={{
+        position: 'absolute',
+        top: 16,
+        left: 16,
+        zIndex: 10,
+        display: 'flex',
+        gap: 8,
+        background: '#19152a',
+        border: '1px solid #2e2846',
+        borderRadius: 13,
+        padding: '8px 10px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      }}>
         <button className="btn-primary" onClick={addNode} style={{ padding: '6px 14px', fontSize: 13 }}>
-          <Plus size={15} /> add node
+          <Plus size={14} /> add node
         </button>
-        <button className="btn-ghost" onClick={() => fitView({ duration: 400 })} style={{ padding: '6px 10px' }}>
-          <Maximize2 size={15} />
+        <button className="btn-ghost" onClick={() => fitView({ duration: 400 })} style={{ padding: '6px 10px' }} title="fit view">
+          <Maximize2 size={14} />
         </button>
         <button
           className="btn-ghost"
           onClick={clearAll}
-          style={{ padding: '6px 10px', color: '#f85149', borderColor: '#f8514940' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#f85149' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#f8514940' }}
+          style={{ padding: '6px 10px', color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#f87171' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(248,113,113,0.3)' }}
+          title="clear all"
         >
-          <Trash2 size={15} />
+          <Trash2 size={14} />
         </button>
       </div>
 
       {/* Hint */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 10,
-          background: 'rgba(22,27,34,0.9)',
-          border: '1px solid #30363d',
-          borderRadius: 20,
-          padding: '6px 16px',
-          fontSize: 12,
-          color: '#8b949e',
-        }}
-      >
-        drag nodes · connect by dragging between handles · double-click to rename
+      <div style={{
+        position: 'absolute',
+        bottom: 16,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10,
+        background: 'rgba(17,14,28,0.85)',
+        border: '1px solid #2e2846',
+        borderRadius: 20,
+        padding: '6px 16px',
+        fontSize: 11.5,
+        color: '#4d4468',
+        backdropFilter: 'blur(8px)',
+        whiteSpace: 'nowrap',
+      }}>
+        drag nodes · connect between handles · double-click to rename · delete key to remove
       </div>
 
       <ReactFlow
@@ -231,23 +213,16 @@ function MindMapInner() {
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.3 }}
-        style={{ background: '#0d1117' }}
+        style={{ background: '#0b0914' }}
         deleteKeyCode="Delete"
         multiSelectionKeyCode="Shift"
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={24}
-          size={1.5}
-          color="#21262d"
-        />
-        <Controls
-          style={{ bottom: 60, right: 16, left: 'auto', top: 'auto' }}
-        />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#2e2846" />
+        <Controls style={{ bottom: 60, right: 16, left: 'auto', top: 'auto' }} />
         <MiniMap
           style={{ bottom: 60, right: 110 }}
-          nodeColor={(n) => getNodeColor(n.id, n.data as { color?: string })}
-          maskColor="rgba(0,0,0,0.6)"
+          nodeColor={n => getNodeColor(n.id, n.data as { color?: string })}
+          maskColor="rgba(11,9,20,0.7)"
         />
       </ReactFlow>
     </div>
